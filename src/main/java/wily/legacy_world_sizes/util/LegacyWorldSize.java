@@ -26,8 +26,6 @@ public record LegacyWorldSize(ResourceLocation id, Component name, Consumer<Appl
     public static final ListMap<ResourceLocation, LegacyWorldSize> map = new ListMap<>();
     public static final Codec<LegacyWorldSize> CODEC = map.createCodec(ResourceLocation.CODEC);
 
-    public static final LegacyWorldSize CUSTOM = register(new LegacyWorldSize(LegacyWorldSizes.createModLocation("custom"), LWSComponents.optionName("worldSizes.infinity"), ctx -> {}));
-
     public static final LegacyWorldSize CLASSIC = register(new LegacyWorldSize(LegacyWorldSizes.createModLocation("classic"), LWSComponents.optionName("worldSizes.classic"), ctx -> {
         LWSWorldOptions.legacyLevelLimits.set(Map.of(Level.OVERWORLD, new LegacyLevelLimit(List.of(new LegacyChunkBounds(new ChunkPos(-27, -27), new ChunkPos(27, 27))), true, getChunkContent(ctx), Optional.of(ctx.registry().getOrThrow(Biomes.PLAINS)), false), Level.NETHER, new LegacyLevelLimit(List.of(new LegacyChunkBounds(new ChunkPos(-9, -9), new ChunkPos(9, 9))), false, FakeLevelChunk.ContentType.NONE, Optional.empty(), true), Level.END, new LegacyLevelLimit(List.of(new LegacyChunkBounds(new ChunkPos(-6, -6), new ChunkPos(6, 6))), false, FakeLevelChunk.ContentType.NONE, Optional.empty(), false)));
         LWSWorldOptions.maxEndGateways.set(1);
@@ -59,6 +57,8 @@ public record LegacyWorldSize(ResourceLocation id, Component name, Consumer<Appl
         LWSWorldOptions.endSpawnPoint.set(LEGACY_END_SPAWN_POINT);
         LWSWorldOptions.legacyEndSpikes.set(true);
     }));
+
+    public static final LegacyWorldSize CUSTOM = register(new LegacyWorldSize(LegacyWorldSizes.createModLocation("custom"), LWSComponents.optionName("worldSizes.infinity"), ctx -> {}));
 
     public static FakeLevelChunk.ContentType getChunkContent(ApplyContext ctx) {
         return isOverworldFlat(ctx.registry()) ? FakeLevelChunk.ContentType.FLAT : FakeLevelChunk.ContentType.OCEAN;
