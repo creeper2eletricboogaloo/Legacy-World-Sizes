@@ -33,8 +33,8 @@
 |:----------------------|:-----------:|:-------:|
 | World Sizes           |      ✅      | ✅       |
 | Legacy4J Compat       |      ✅      | ✅       |
-| Biome Sizes           |      ❌      | ✅       |
-| Balanced Seed         |      ❌      | ✅       |
-| Flat Nether           |      ❌      | ✅       |
+| Biome Sizes           |      ✅      | ✅       |
+| Balanced Seed         |      ✅      | ✅       |
+| Flat Nether           |      ✅      | ✅       |
 | 1.20.1-1.21.5 Support |      ❌      | ✅       |
 

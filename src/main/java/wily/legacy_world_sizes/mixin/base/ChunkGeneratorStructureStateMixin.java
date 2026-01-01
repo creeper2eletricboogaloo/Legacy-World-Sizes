@@ -15,12 +15,7 @@ public class ChunkGeneratorStructureStateMixin implements LevelHolder {
     @Override
     public void setLevel(Level level) {
         this.lws$level = level;
-        LWSWorldOptions.setupVillagesValidPlacement(getLevel(), self());
-        LWSWorldOptions.setupPillagerOutpostsValidPlacement(getLevel(), self());
-        LWSWorldOptions.setupWoodlandMansionsValidPlacement(getLevel(), self());
-        LWSWorldOptions.setupStrongholdValidPlacement(getLevel(), self());
-        LWSWorldOptions.setupNetherComplexesValidPlacement(getLevel(), self());
-        LWSWorldOptions.setupEndCitiesValidPlacement(getLevel(), self());
+        LWSWorldOptions.setupValidPlacements(getLevel(), self());
     }
 
     @Override

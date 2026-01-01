@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -21,10 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
-import net.minecraft.world.level.levelgen.PositionalRandomFactory;
-import net.minecraft.world.level.levelgen.RandomState;
-import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.levelgen.*;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -66,6 +64,10 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
         return x >= min().x && z >= min().z && x < max().x && z < max().z;
     }
 
+    public boolean isInside(int x, int z, int inflate) {
+        return x >= min().x - inflate && z >= min().z - inflate && x < max().x + inflate && z < max().z + inflate;
+    }
+
     public boolean isInside(double x, double z, double inflate) {
         return x >= min.getMinBlockX() - inflate && z >= min.getMinBlockZ() - inflate && x < max.getMinBlockX() + inflate && z < max.getMinBlockZ() + inflate;
     }
@@ -90,16 +92,15 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public boolean isBorder(int x, int z, int add) {
-        int addPlus = add + 1;
-        return (x == min.x - addPlus || z == min.z - addPlus || x == max.x + add || z == max.z + add) && (x >= min().x - addPlus && z >= min().z - addPlus && x < max().x + addPlus && z < max().z + addPlus);
+        return (x == min.x - add || z == min.z - add || x == max.x + add - 1 || z == max.z + add - 1) && isInside(x, z, add);
     }
 
-    public boolean isBorder(int x, int z) {
-        return isBorder(x, z, 0);
+    public boolean isOutsideBorder(int x, int z) {
+        return isBorder(x, z, 1);
     }
 
     public boolean isInsideBorder(int x, int z) {
-        return isBorder(x, z, -1);
+        return isBorder(x, z, 0);
     }
 
     public double hyp() {
@@ -119,9 +120,10 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public void generateBedrockWalls(ChunkAccess chunkAccess, ChunkGenerator generator, RandomState randomState) {
+        boolean upDown = generator instanceof FlatLevelSource;
         PositionalRandomFactory factory = randomState.getOrCreateRandomFactory(BEDROCK_WALLS_RANDOM);
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-        for (int y = generator.getMinY(); y < generator.getMinY() + generator.getGenDepth(); y++) {
+        for (int y = chunkAccess.getMinY(); y < chunkAccess.getMinY() + chunkAccess.getHeight(); y++) {
             pos.setY(y);
             for (int dx = 0; dx < 16; dx++) {
                 pos.setX(chunkAccess.getPos().getMinBlockX() + dx);
@@ -133,7 +135,9 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
                     if (pos.getX() <= min.getMinBlockX() + randomAmount ||
                             pos.getZ() <= min.getMinBlockZ() + randomAmount ||
                             pos.getX() >= max.getMinBlockX() - 1 - randomAmount ||
-                            pos.getZ() >= max.getMinBlockZ() - 1 - randomAmount) {
+                            pos.getZ() >= max.getMinBlockZ() - 1 - randomAmount || (upDown &&
+                            (pos.getY() <= chunkAccess.getMinY() + randomAmount ||
+                             pos.getY() >= chunkAccess.getMinY() + chunkAccess.getHeight() - 1 - randomAmount))) {
                         chunkAccess.setBlockState(pos.setY(y), Blocks.BEDROCK.defaultBlockState());
                     }
                 }
@@ -226,6 +230,7 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
 
     public long findBalancedSeed(RegistryAccess registryAccess, int tries) {
         MultiNoiseBiomeSource biomeSource = MultiNoiseBiomeSource.createFromPreset(registryAccess.getOrThrow(MultiNoiseBiomeSourceParameterLists.OVERWORLD));
+        int actualBiomeWeight = 0;
         int actualBiomeCount = 0;
         long actualSeed = 0;
 
@@ -243,15 +248,22 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
                 }
             }
 
-            if (set.size() > actualBiomeCount) {
+            int weight = set.stream().mapToInt(LegacyChunkBounds::getBalancedBiomeWeight).sum();
+
+            if (weight > actualBiomeWeight) {
                 actualSeed = seed;
+                actualBiomeWeight = weight;
                 actualBiomeCount = set.size();
             }
         }
 
-        LegacyWorldSizes.LOGGER.debug("Balanced seed with {} biomes", actualBiomeCount);
+        LegacyWorldSizes.LOGGER.debug("Balanced seed with {} biomes and weigth of {}", actualBiomeCount, actualBiomeWeight);
 
         return actualSeed;
+    }
+
+    public static int getBalancedBiomeWeight(Holder<Biome> biome) {
+        return biome.is(BiomeTags.IS_OCEAN) ? 1 : biome.is(BiomeTags.HAS_VILLAGE_PLAINS) ? 4 : biome.is(BiomeTags.HAS_WOODLAND_MANSION) ? 6 : 3;
     }
 
     public static float getHeightFalloff(int nearestDist) {

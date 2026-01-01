@@ -53,7 +53,7 @@ public class ChunkStepMixin {
         if (!validStep && !LWSWorldOptions.isValidPos(context.level().dimension(), chunkAccess.getPos())) {
             LegacyLevelLimit limit = LWSWorldOptions.legacyLevelLimits.get().get(context.level().dimension());
             ProtoChunk protoChunk = FakeLevelChunk.ContentType.CACHE.computeIfAbsent(limit.content(), content -> content.fill(context.level(), new ProtoChunk(ChunkPos.ZERO, UpgradeData.EMPTY, context.level(), context.level().palettedContainerFactory(), null)));
-            FakeLevelChunk fakeChunk = new FakeLevelChunk(context.level(), chunkAccess.getPos(), Arrays.stream(protoChunk.getSections()).map(LevelChunkSection::copy).toArray(LevelChunkSection[]::new), limit.heightFallOff(), limit.fixedBiome().orElse(null));
+            FakeLevelChunk fakeChunk = new FakeLevelChunk(context.level(), chunkAccess.getPos(), Arrays.stream(protoChunk.getSections()).map(LevelChunkSection::copy).toArray(LevelChunkSection[]::new), limit.heightFallOff() && limit.bounds().stream().anyMatch(bounds -> bounds.isOutsideBorder(chunkAccess.getPos().x, chunkAccess.getPos().z)), limit.fixedBiome().orElse(null));
 
             for (Map.Entry<Heightmap.Types, Heightmap> entry : protoChunk.getHeightmaps()) {
                 if (ChunkStatus.SURFACE.heightmapsAfter().contains(entry.getKey())) {

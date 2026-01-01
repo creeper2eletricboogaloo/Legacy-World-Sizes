@@ -45,6 +45,7 @@ import wily.legacy_world_sizes.mixin.base.*;
 import wily.legacy_world_sizes.util.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -156,25 +157,6 @@ public class LWSWorldOptions {
         return isValidPos(level, SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
     }
 
-    public static boolean isBorder(ResourceKey<Level> level, int x, int z) {
-        LegacyLevelLimit limit = legacyLevelLimits.get().get(level);
-
-        if (limit != null && !limit.bounds().isEmpty()) {
-            for (LegacyChunkBounds bounds : limit.bounds()) {
-                if (bounds.isBorder(x, z)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean isBorder(ResourceKey<Level> level, ChunkPos pos) {
-        return isBorder(level, pos.x, pos.z);
-    }
-
     public static double getTeleportationScale(ResourceKey<Level> from, ResourceKey<Level> to, double original) {
         LegacyLevelLimit limitFrom = legacyLevelLimits.get().get(from);
         LegacyLevelLimit limitTo = legacyLevelLimits.get().get(to);
@@ -257,6 +239,18 @@ public class LWSWorldOptions {
         }
     }
 
+    public static void setupValidPlacements(Level level, ChunkGeneratorStructureState genState) {
+        LWSWorldOptions.setupVillagesValidPlacement(level, genState);
+        LWSWorldOptions.setupPillagerOutpostsValidPlacement(level, genState);
+        LWSWorldOptions.setupDesertPyramidValidPlacement(level, genState);
+        LWSWorldOptions.setupJungleTemplesPlacement(level, genState);
+        LWSWorldOptions.setupRuinedPortalsValidPlacement(level, genState);
+        LWSWorldOptions.setupWoodlandMansionsValidPlacement(level, genState);
+        LWSWorldOptions.setupStrongholdValidPlacement(level, genState);
+        LWSWorldOptions.setupNetherComplexesValidPlacement(level, genState);
+        LWSWorldOptions.setupEndCitiesValidPlacement(level, genState);
+    }
+
     public static void setupEndCitiesValidPlacement(Level level, ChunkGeneratorStructureState genState) {
         LegacyLevelLimit limit = legacyLevelLimits.get().get(Level.END);
 
@@ -296,6 +290,24 @@ public class LWSWorldOptions {
         }
     }
 
+    public static void setupDesertPyramidValidPlacement(Level level, ChunkGeneratorStructureState genState) {
+        if (level.dimension() == Level.OVERWORLD) {
+            setupStructureValidPlacement(legacyLevelLimits.get().get(level.dimension()), level, genState, BuiltinStructureSets.DESERT_PYRAMIDS, false);
+        }
+    }
+
+    public static void setupJungleTemplesPlacement(Level level, ChunkGeneratorStructureState genState) {
+        if (level.dimension() == Level.OVERWORLD) {
+            setupStructureValidPlacement(legacyLevelLimits.get().get(level.dimension()), level, genState, BuiltinStructureSets.JUNGLE_TEMPLES, false);
+        }
+    }
+
+    public static void setupRuinedPortalsValidPlacement(Level level, ChunkGeneratorStructureState genState) {
+        if (level.dimension() == Level.OVERWORLD) {
+            setupStructureValidPlacement(legacyLevelLimits.get().get(level.dimension()), level, genState, BuiltinStructureSets.RUINED_PORTALS, false);
+        }
+    }
+
     public static void setupWoodlandMansionsValidPlacement(Level level, ChunkGeneratorStructureState genState) {
         if (level.dimension() == Level.OVERWORLD) {
             setupStructureValidPlacement(legacyLevelLimits.get().get(level.dimension()), level, genState, BuiltinStructureSets.WOODLAND_MANSIONS, false);
@@ -325,10 +337,10 @@ public class LWSWorldOptions {
                 if (structureSet.value().placement() instanceof RandomSpreadStructurePlacement old && structureSets.remove(structureSet)) {
                     if (alwaysPlace) {
                         for (StructureSet.StructureSelectionEntry structure : structureSet.value().structures()) {
-                            structureSets.add(Holder.direct(new StructureSet(List.of(structure), new LimitedRandomStructurePlacement(old.spacing(), Math.max(old.separation(), old.spacing() - d), old.spreadType(), ((StructurePlacementAccessor) old).getSalt() / structure.weight(), List.of(structure), genState, bound))));
+                            structureSets.add(Holder.direct(new StructureSet(List.of(structure), new LimitedRandomStructurePlacement(old.spacing(), Math.max(old.separation(), old.spacing() - d), old.spreadType(), ((StructurePlacementAccessor) old).getSalt() / structure.weight(), List.of(structure), genState, bound, limit.heightFallOff() ? 4 : 0))));
                         }
                     } else {
-                        structureSets.add(Holder.direct(new StructureSet(structureSet.value().structures(), new LimitedRandomStructurePlacement(old.spacing(), Math.max(old.separation(), old.spacing() - d), old.spreadType(), ((StructurePlacementAccessor) old).getSalt(), structureSet.value().structures(), genState, bound))));
+                        structureSets.add(Holder.direct(new StructureSet(structureSet.value().structures(), new LimitedRandomStructurePlacement(old.spacing(), Math.max(old.separation(), old.spacing() - d), old.spreadType(), ((StructurePlacementAccessor) old).getSalt(), structureSet.value().structures(), genState, bound, limit.heightFallOff() ? 4 : 0))));
                     }
                 }
                 accessor.setHasGeneratedPositions(false);
@@ -379,74 +391,91 @@ public class LWSWorldOptions {
 
         private final ChunkGeneratorStructureState structureState;
         private final LegacyChunkBounds bounds;
-        private final HashMap<ChunkPos, ChunkPos> validPositions = new HashMap<>();
+        private final int distanceFromBorder;
+        private final Map<ChunkPos, ChunkPos> validPositions = new ConcurrentHashMap<>();
+        private boolean generatedPositions = false;
 
-        public LimitedRandomStructurePlacement(int i, int j, RandomSpreadType randomSpreadType, int k, List<StructureSet.StructureSelectionEntry> structures, ChunkGeneratorStructureState structureState, LegacyChunkBounds bounds) {
+        public LimitedRandomStructurePlacement(int i, int j, RandomSpreadType randomSpreadType, int k, List<StructureSet.StructureSelectionEntry> structures, ChunkGeneratorStructureState structureState, LegacyChunkBounds bounds, int distanceFromBorder) {
             super(i, j, randomSpreadType, k);
             this.structures = structures;
             this.structureState = structureState;
             this.bounds = bounds;
+            this.distanceFromBorder = distanceFromBorder;
+        }
+
+        public void generateValidPositions(long seed) {
+            if (generatedPositions) return;
+            int minX = Math.floorDiv(bounds.min().x, spacing());
+            int minZ = Math.floorDiv(bounds.min().z, spacing());
+            int maxX = Math.floorDiv(bounds.max().x, spacing());
+            int maxZ = Math.floorDiv(bounds.max().z, spacing());
+
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    validPositions.computeIfAbsent(new ChunkPos(x, z), spacedPos -> {
+                        WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
+                        List<StructureSet.StructureSelectionEntry> actualStructures = new ArrayList<>(structures);
+                        int totalWeight = 0;
+
+                        for (StructureSet.StructureSelectionEntry structureSelectionEntry2 : structures) {
+                            totalWeight += structureSelectionEntry2.weight();
+                        }
+                        worldgenRandom.setLargeFeatureWithSalt(seed, spacedPos.x, spacedPos.z, this.salt());
+                        RandomSource fork = worldgenRandom.fork();
+                        int n = spacing() - separation();
+                        ChunkPos pos = ChunkPos.ZERO;
+                        while (!actualStructures.isEmpty()) {
+                            int index = 0;
+
+                            if (actualStructures.size() > 1) {
+                                int weight = fork.nextInt(totalWeight);
+                                for (StructureSet.StructureSelectionEntry structureSelectionEntry3 : actualStructures) {
+                                    weight -= structureSelectionEntry3.weight();
+                                    if (weight < 0) {
+                                        break;
+                                    }
+
+                                    index++;
+                                }
+                            }
+                            StructureSet.StructureSelectionEntry entry = actualStructures.get(index);
+
+                            int o = spreadType().evaluate(worldgenRandom, n);
+                            int p = spreadType().evaluate(worldgenRandom, n);
+                            pos = new ChunkPos(spacedPos.x * spacing() + o, spacedPos.z * spacing() + p);
+
+                            if (bounds.isInside(pos.x, pos.z)) {
+                                BiomeSource biomeSource = ((ChunkGeneratorStructureStateAccessor) structureState).getBiomeSource();
+                                HolderSet<Biome> biomes = entry.structure().value().biomes();
+
+                                for (BlockPos.MutableBlockPos blockPos : BlockPos.spiralAround(new BlockPos(pos.x, 0, pos.z), spacing(), Direction.EAST, Direction.SOUTH)) {
+                                    //LegacyWorldSizes.LOGGER.warn("Attempt to find biome for {} at {}, {}, starting from {}, {}", entry.structure().unwrapKey().get().location(), blockPos.getX(), blockPos.getZ(), pos.x, pos.z);
+                                    if (bounds.isInside(blockPos.getX(), blockPos.getZ(), -distanceFromBorder) && biomes.contains(biomeSource.getNoiseBiome(QuartPos.fromSection(blockPos.getX()), QuartPos.fromBlock(60), QuartPos.fromSection(blockPos.getZ()), structureState.randomState().sampler()))) {
+                                        //LegacyWorldSizes.LOGGER.warn("Found biome for {} at {}, {}, starting on {}, {}, spaced by {}, {}, using {}", entry.structure().unwrapKey().get().location(), blockPos.getX(), blockPos.getZ(), pos.x, pos.z, spacedPos.x, spacedPos.z, n);
+                                        return new ChunkPos(blockPos.getX(), blockPos.getZ());
+                                    }
+                                }
+                            }
+                            actualStructures.remove(index);
+                            totalWeight -= entry.weight();
+                        }
+                        //LegacyWorldSizes.LOGGER.warn("Couldn't find biome for {} starting on {}, {}, spaced by {}, {}, using {}", structures.get(0), pos.x, pos.z, spacedPos.x, spacedPos.z, n);
+                        return pos;
+                    });
+                }
+            }
+            generatedPositions = true;
         }
 
         @Override
         public ChunkPos getPotentialStructureChunk(long l, int i, int j) {
-            ChunkPos relative = validPositions.computeIfAbsent(new ChunkPos(Math.floorDiv(i, spacing()), Math.floorDiv(j, spacing())), spacedPos -> {
-                WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(0L));
-                List<StructureSet.StructureSelectionEntry> actualStructures = new ArrayList<>(structures);
-                int totalWeight = 0;
-
-                for (StructureSet.StructureSelectionEntry structureSelectionEntry2 : structures) {
-                    totalWeight += structureSelectionEntry2.weight();
-                }
-                worldgenRandom.setLargeFeatureWithSalt(l, spacedPos.x, spacedPos.z, this.salt());
-                RandomSource fork = worldgenRandom.fork();
-                int n = spacing() - separation();
-                ChunkPos pos = ChunkPos.ZERO;
-                while (!actualStructures.isEmpty()) {
-                    int index = 0;
-
-                    if (actualStructures.size() > 1) {
-                        int weight = fork.nextInt(totalWeight);
-                        for (StructureSet.StructureSelectionEntry structureSelectionEntry3 : actualStructures) {
-                            weight -= structureSelectionEntry3.weight();
-                            if (weight < 0) {
-                                break;
-                            }
-
-                            index++;
-                        }
-                    }
-                    StructureSet.StructureSelectionEntry entry = actualStructures.get(index);
-
-                    int o = spreadType().evaluate(worldgenRandom, n);
-                    int p = spreadType().evaluate(worldgenRandom, n);
-                    pos = new ChunkPos(spacedPos.x * spacing() + o, spacedPos.z * spacing() + p);
-
-                    if (bounds.isInside(pos.x, pos.z)) {
-                        BiomeSource biomeSource = ((ChunkGeneratorStructureStateAccessor) structureState).getBiomeSource();
-                        HolderSet<Biome> biomes = entry.structure().value().biomes();
-
-                        for (BlockPos.MutableBlockPos blockPos : BlockPos.spiralAround(new BlockPos(pos.x, 0, pos.z), spacing(), Direction.EAST, Direction.SOUTH)) {
-                            if (bounds.isInside(blockPos.getX(), blockPos.getZ()) && biomes.contains(biomeSource.getNoiseBiome(QuartPos.fromSection(blockPos.getX()), QuartPos.fromBlock(60), QuartPos.fromSection(blockPos.getZ()), structureState.randomState().sampler()))) {
-                                LegacyWorldSizes.LOGGER.warn("Found biome for {} at {}, {}, starting on {}, {}, spaced by {}, {}, using {}", entry.structure().unwrapKey().get().location(), blockPos.getX(), blockPos.getZ(), pos.x, pos.z, spacedPos.x, spacedPos.z, n);
-                                return new ChunkPos(blockPos.getX(), blockPos.getZ());
-                            }
-                        }
-                    }
-                    actualStructures.remove(index);
-                    totalWeight -= entry.weight();
-                }
-                //LegacyWorldSizes.LOGGER.warn("Couldn't find biome for {} starting on {}, {}, spaced by {}, {}, using {}", structures.get(0), pos.x, pos.z, spacedPos.x, spacedPos.z, n);
-                return pos;
-            });
-
-            if (relative.x == i && relative.z == j) return relative;
+            generateValidPositions(l);
 
             for (ChunkPos value : validPositions.values()) {
                 if (value.x == i && value.z == j) return value;
             }
 
-            return relative;
+            return validPositions.getOrDefault(new ChunkPos(Math.floorDiv(i, spacing()), Math.floorDiv(j, spacing())), ChunkPos.ZERO);
         }
     }
 }

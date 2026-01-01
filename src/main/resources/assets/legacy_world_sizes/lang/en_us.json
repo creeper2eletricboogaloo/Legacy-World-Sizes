@@ -13,5 +13,7 @@
   "legacy_world_sizes.options.worldSizes.medium": "Medium",
   "legacy_world_sizes.options.worldSizes.large": "Large",
   "legacy_world_sizes.options.balancedSeed": "Find Balanced Seed",
-  "legacy_world_sizes.options.balancedSeed.description": "If you're creating a world with a random seed, this option looks for a world with a good mix of biomes. Disabling this may generate a world all of one Biome!"
+  "legacy_world_sizes.options.balancedSeed.description": "If you're creating a world with a random seed, this option looks for a world with a good mix of biomes. Disabling this may generate a world all of one Biome!",
+  "legacy.finding_seed": "Finding seed for the world generator",
+  "legacy.connect.initializing": "Initializing server"
 }

@@ -10,5 +10,7 @@
   "legacy_world_sizes.options.worldSizes.medium": "Médio",
   "legacy_world_sizes.options.worldSizes.large": "Grande",
   "legacy_world_sizes.options.balancedSeed": "Encontrar Semente Equilibrada",
-  "legacy_world_sizes.options.balancedSeed.description": "Se você estiver criando um mundo com uma semente aleatória, essa opção procura um mundo com uma boa combinação de biomas. Desabilitar essa opção pode gerar um mundo de um só bioma!"
+  "legacy_world_sizes.options.balancedSeed.description": "Se você estiver criando um mundo com uma semente aleatória, essa opção procura um mundo com uma boa combinação de biomas. Desabilitar essa opção pode gerar um mundo de um só bioma!",
+  "legacy.finding_seed": "Encontrando semente para o gerador de mundo",
+  "legacy.connect.initializing": "Inicializando servidor"
 }
