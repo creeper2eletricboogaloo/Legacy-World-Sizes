@@ -108,6 +108,7 @@ dependencies {
 	}
 	//implementation(libs.moulberry.mixinconstraints)
 	api("wily.factory_api:factory_api-forge:${stonecutter.current.version}-${prop("factory_api_version")}")
+	compileOnly(rootProject.fileTree("leg four jay"))
 	//compileOnly("wily.legacy:legacy-${loader}:${stonecutter.current.version}-${prop("legacy4j_version")}")
 	api("jarJar"("org.apache.httpcomponents:httpclient:4.5.14") {
 		exclude(group = "commons-codec", module = "commons-codec")

@@ -34,4 +34,4 @@ stonecutter {
     }
 }
 
-rootProject.name = "Legacy4J"
+rootProject.name = "Legacy World Sizes"
