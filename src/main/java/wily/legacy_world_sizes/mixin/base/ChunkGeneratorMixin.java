@@ -18,7 +18,7 @@ public class ChunkGeneratorMixin {
         LegacyLevelLimit limit = LWSWorldOptions.legacyLevelLimits.get().get(level.dimension());
         if (limit != null && limit.bounds().size() == 1) {
             LegacyChunkBounds bounds = limit.bounds().get(0);
-            return Math.min(original, Math.max(bounds.max().x - bounds.min().x, bounds.max().z - bounds.min().z) / 6);
+            return Math.min(original, Math.max(bounds.max().x() - bounds.min().x(), bounds.max().z() - bounds.min().z()) / 6);
         }
         return original;
     }

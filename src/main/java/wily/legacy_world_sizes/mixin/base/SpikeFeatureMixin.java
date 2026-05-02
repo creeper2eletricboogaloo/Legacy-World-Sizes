@@ -2,7 +2,7 @@ package wily.legacy_world_sizes.mixin.base;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.world.level.WorldGenLevel;
-import net.minecraft.world.level.levelgen.feature.SpikeFeature;
+import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -11,11 +11,11 @@ import wily.legacy_world_sizes.config.LWSWorldOptions;
 
 import java.util.List;
 
-@Mixin(SpikeFeature.class)
+@Mixin(EndSpikeFeature.class)
 public class SpikeFeatureMixin {
 
     @Inject(method = "getSpikesForLevel", at = @At("HEAD"), cancellable = true)
-    private static void getSpikesForLevel(WorldGenLevel worldGenLevel, CallbackInfoReturnable<List<SpikeFeature.EndSpike>> cir) {
+    private static void getSpikesForLevel(WorldGenLevel worldGenLevel, CallbackInfoReturnable<List<EndSpikeFeature.EndSpike>> cir) {
         if (LWSWorldOptions.legacyEndSpikes.get()) {
             cir.setReturnValue(LWSWorldOptions.LEGACY_END_SPIKES);
         }

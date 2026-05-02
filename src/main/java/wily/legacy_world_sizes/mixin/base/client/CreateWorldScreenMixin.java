@@ -1,7 +1,7 @@
 package wily.legacy_world_sizes.mixin.base.client;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ProgressScreen;
 import net.minecraft.client.gui.screens.Screen;

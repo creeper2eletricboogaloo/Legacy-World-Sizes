@@ -8,7 +8,7 @@ import wily.factoryapi.FactoryAPIClient;
 import wily.factoryapi.FactoryAPIPlatform;
 import wily.factoryapi.base.client.screen.FactoryConfigScreen;
 import wily.factoryapi.base.config.FactoryConfig;
-import wily.legacy_world_sizes.client.Legacy4JCompat;
+//import wily.legacy_world_sizes.client.Legacy4JCompat;
 import wily.legacy_world_sizes.config.LWSCommonOptions;
 import wily.legacy_world_sizes.config.LWSWorldOptions;
 import wily.legacy_world_sizes.util.LWSComponents;
@@ -22,8 +22,8 @@ public class LegacyWorldSizesClient {
         FactoryAPIClient.PlayerEvent.DISCONNECTED_EVENT.register(LegacyWorldSizesClient::onDisconnect);
         FactoryAPIClient.registerConfigScreen(FactoryAPIPlatform.getModInfo(LegacyWorldSizes.MOD_ID), LegacyWorldSizesClient::createConfigScreen);
         FactoryAPIClient.setup(LegacyWorldSizesClient::setup);
-        if (FactoryAPI.isModLoaded("legacy"))
-            Legacy4JCompat.init();
+        if (FactoryAPI.isModLoaded("legacy")){}
+//            Legacy4JCompat.init();
     }
 
     public static Screen createConfigScreen(Screen parent) {

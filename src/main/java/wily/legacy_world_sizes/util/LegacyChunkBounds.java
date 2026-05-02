@@ -5,7 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.Mth;
@@ -39,7 +39,7 @@ import java.util.Set;
 public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     public static final Codec<LegacyChunkBounds> CODEC = RecordCodecBuilder.create(i -> i.group(ChunkPos.CODEC.fieldOf("min").forGetter(LegacyChunkBounds::min), ChunkPos.CODEC.fieldOf("max").forGetter(LegacyChunkBounds::max)).apply(i, LegacyChunkBounds::new));
 
-    public static final ResourceLocation BEDROCK_WALLS_RANDOM = FactoryAPI.createVanillaLocation("bedrock_walls");
+    public static final Identifier BEDROCK_WALLS_RANDOM = FactoryAPI.createVanillaLocation("bedrock_walls");
 
     public LegacyChunkBounds(ChunkPos min, ChunkPos max) {
         this(min, max, Shapes.join(
@@ -61,11 +61,11 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public boolean isInside(int x, int z) {
-        return x >= min().x && z >= min().z && x < max().x && z < max().z;
+        return x >= min().x() && z >= min().z() && x < max().x() && z < max().z();
     }
 
     public boolean isInside(int x, int z, int inflate) {
-        return x >= min().x - inflate && z >= min().z - inflate && x < max().x + inflate && z < max().z + inflate;
+        return x >= min().x() - inflate && z >= min().z() - inflate && x < max().x() + inflate && z < max().z() + inflate;
     }
 
     public boolean isInside(double x, double z, double inflate) {
@@ -92,7 +92,7 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public boolean isBorder(int x, int z, int add) {
-        return (x == min.x - add || z == min.z - add || x == max.x + add - 1 || z == max.z + add - 1) && isInside(x, z, add);
+        return (x == min.x() - add || z == min.z() - add || x == max.x() + add - 1 || z == max.z() + add - 1) && isInside(x, z, add);
     }
 
     public boolean isOutsideBorder(int x, int z) {
@@ -104,19 +104,19 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public double hyp() {
-        return Math.sqrt(Mth.square(max.x - min.x) + Mth.square(max.z - min.z));
+        return Math.sqrt(Mth.square(max.x() - min.x()) + Mth.square(max.z() - min.z()));
     }
 
     public LegacyChunkBounds move(int x, int z) {
-        return new LegacyChunkBounds(new ChunkPos(min.x + x, min.z + z), new ChunkPos(max.x + x, max.z + z));
+        return new LegacyChunkBounds(new ChunkPos(min.x() + x, min.z() + z), new ChunkPos(max.x() + x, max.z() + z));
     }
 
     public LegacyChunkBounds moveTo(int x, int z) {
-        return move(x + (max.x - min.x) / 2 * Mth.sign(x), z + (max.z - min.z) / 2 * Mth.sign(z));
+        return move(x + (max.x() - min.x()) / 2 * Mth.sign(x), z + (max.z() - min.z()) / 2 * Mth.sign(z));
     }
 
     public ChunkPos middle() {
-        return new ChunkPos((min().x + max().x) / 2, (min().z + max().z) / 2);
+        return new ChunkPos((min().x() + max().x()) / 2, (min().z() + max().z()) / 2);
     }
 
     public void generateBedrockWalls(ChunkAccess chunkAccess, ChunkGenerator generator, RandomState randomState) {
@@ -147,7 +147,7 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
 
     public BlockPos findOrCreateValidTeleportPos(ServerLevel serverLevel) {
         ChunkPos chunkPos = findExitPortalXZPosTentative(serverLevel);
-        LevelChunk levelChunk = serverLevel.getChunk(chunkPos.x, chunkPos.z);
+        LevelChunk levelChunk = serverLevel.getChunk(chunkPos.x(), chunkPos.z());
         BlockPos blockPos2 = findValidSpawnInChunk(levelChunk);
         if (blockPos2 == null) {
             BlockPos blockPos3 = BlockPos.containing(chunkPos.getMinBlockX() + 0.5, 75.0, chunkPos.getMinBlockZ() + 0.5);
@@ -165,8 +165,8 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public ChunkPos findExitPortalXZPosTentative(ServerLevel serverLevel) {
-        for (int x = min().x + 1; x < max().x; x++) {
-            for (int z = min().z + 1; z < max().z; z++) {
+        for (int x = min().x() + 1; x < max().x(); x++) {
+            for (int z = min().z() + 1; z < max().z(); z++) {
                 if (serverLevel.getChunk(x, z).getHighestFilledSectionIndex() != -1)
                     return new ChunkPos(x, z);
             }
@@ -239,11 +239,11 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
             RandomState randomState = RandomState.create(registryAccess, NoiseGeneratorSettings.OVERWORLD, seed);
             Set<Holder<Biome>> set = new HashSet<>();
 
-            int xd = Math.max(1, (max().x - min().x) / 64);
-            int zd = Math.max(1, (max().z - min().z) / 64);
+            int xd = Math.max(1, (max().x() - min().x()) / 64);
+            int zd = Math.max(1, (max().z() - min().z()) / 64);
 
-            for (int x = min().x; x < max().x; x += xd) {
-                for (int z = min().z; z < max().z; z += zd) {
+            for (int x = min().x(); x < max().x(); x += xd) {
+                for (int z = min().z(); z < max().z(); z += zd) {
                     set.add(biomeSource.getNoiseBiome(QuartPos.fromSection(x), QuartPos.fromBlock(60), QuartPos.fromSection(z), randomState.sampler()));
                 }
             }
@@ -274,10 +274,10 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
     }
 
     public int distanceToEdge(float a, int x, int z) {
-        Vec3 topLeft = new Vec3(min.x * 16, 0.0f, min.z * 16);
-        Vec3 topRight = new Vec3(max.x * 16 - 1, 0.0f, min.z * 16);
-        Vec3 bottomLeft = new Vec3(min.x * 16, 0.0f, max.z * 16 - 1);
-        Vec3 bottomRight = new Vec3(max.x * 16 - 1, 0.0f, max.z * 16 - 1);
+        Vec3 topLeft = new Vec3(min.x() * 16, 0.0f, min.z() * 16);
+        Vec3 topRight = new Vec3(max.x() * 16 - 1, 0.0f, min.z() * 16);
+        Vec3 bottomLeft = new Vec3(min.x() * 16, 0.0f, max.z() * 16 - 1);
+        Vec3 bottomRight = new Vec3(max.x() * 16 - 1, 0.0f, max.z() * 16 - 1);
 
         double distance = a;
 

@@ -10,7 +10,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
-import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.dimension.end.EnderDragonFight;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 import org.spongepowered.asm.mixin.Final;
@@ -25,7 +25,7 @@ import wily.legacy_world_sizes.config.LWSWorldOptions;
 import wily.legacy_world_sizes.util.LegacyChunkBounds;
 import wily.legacy_world_sizes.util.LegacyLevelLimit;
 
-@Mixin(EndDragonFight.class)
+@Mixin(EnderDragonFight.class)
 public abstract class EndDragonFightMixin {
     @Shadow @Final private ObjectArrayList<Integer> gateways;
 
@@ -46,7 +46,7 @@ public abstract class EndDragonFightMixin {
 
             if (limit != null) {
                 LegacyChunkBounds mainBound = limit.bounds().get(0);
-                ray = Math.min(Math.min(mainBound.max().x - mainBound.min().x, mainBound.max().z - mainBound.min().z) * 8 - 31, ray);
+                ray = Math.min(Math.min(mainBound.max().x() - mainBound.min().x(), mainBound.max().z() - mainBound.min().z()) * 8 - 31, ray);
             }
 
             int i = this.gateways.remove(this.gateways.size() - 1);
@@ -74,8 +74,8 @@ public abstract class EndDragonFightMixin {
         if (skipArenaLoadedCheck || limit == null || limit.bounds().isEmpty()) return;
         LegacyChunkBounds chunkBounds = limit.bounds().get(0);
 
-        for (int i = chunkBounds.min().x; i < chunkBounds.max().x; i++) {
-            for (int j = chunkBounds.min().z; j < chunkBounds.max().z; j++) {
+        for (int i = chunkBounds.min().x(); i < chunkBounds.max().x(); i++) {
+            for (int j = chunkBounds.min().z(); j < chunkBounds.max().z(); j++) {
                 ChunkAccess chunkAccess = this.level.getChunk(i, j, ChunkStatus.FULL, false);
                 if (!(chunkAccess instanceof LevelChunk levelChunk)) {
                     cir.setReturnValue(false);

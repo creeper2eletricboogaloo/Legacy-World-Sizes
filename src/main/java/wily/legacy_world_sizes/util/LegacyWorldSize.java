@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biomes;
@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public record LegacyWorldSize(ResourceLocation id, Component name, Consumer<ApplyContext> applier) {
+public record LegacyWorldSize(Identifier id, Component name, Consumer<ApplyContext> applier) {
     public static final BlockPos LEGACY_END_SPAWN_POINT = new BlockPos(60, 49, 60);
 
-    public static final ListMap<ResourceLocation, LegacyWorldSize> map = new ListMap<>();
-    public static final Codec<LegacyWorldSize> CODEC = map.createCodec(ResourceLocation.CODEC);
+    public static final ListMap<Identifier, LegacyWorldSize> map = new ListMap<>();
+    public static final Codec<LegacyWorldSize> CODEC = map.createCodec(Identifier.CODEC);
 
     public static final LegacyWorldSize CLASSIC = register(new LegacyWorldSize(LegacyWorldSizes.createModLocation("classic"), LWSComponents.optionName("worldSizes.classic"), ctx -> {
         LWSWorldOptions.legacyLevelLimits.set(Map.of(Level.OVERWORLD, new LegacyLevelLimit(List.of(new LegacyChunkBounds(new ChunkPos(-27, -27), new ChunkPos(27, 27))), true, getChunkContent(ctx), Optional.of(ctx.registry().getOrThrow(Biomes.PLAINS)), false), Level.NETHER, new LegacyLevelLimit(List.of(new LegacyChunkBounds(new ChunkPos(-9, -9), new ChunkPos(9, 9))), false, FakeLevelChunk.ContentType.NONE, Optional.empty(), true), Level.END, new LegacyLevelLimit(List.of(new LegacyChunkBounds(new ChunkPos(-6, -6), new ChunkPos(6, 6))), false, FakeLevelChunk.ContentType.NONE, Optional.empty(), false)));

@@ -20,12 +20,12 @@ public class BlenderMixin {
         if (original) return true;
         ChunkPos center = region.getCenter();
 
-        if (LWSWorldOptions.isValidPos(region.getLevel().dimension(), center.x, center.z)) {
+        if (LWSWorldOptions.isValidPos(region.getLevel().dimension(), center.x(), center.z())) {
             int i = Mth.square(HEIGHT_BLENDING_RANGE_CHUNKS + 1);
             for (int dx = -HEIGHT_BLENDING_RANGE_CHUNKS; dx <= HEIGHT_BLENDING_RANGE_CHUNKS; dx++) {
                 for (int dz = -HEIGHT_BLENDING_RANGE_CHUNKS; dz <= HEIGHT_BLENDING_RANGE_CHUNKS; dz++) {
                     if (dx == 0 || dz == 0 || dx * dx + dz * dz > i) continue;
-                    if (!LWSWorldOptions.isValidPos(region.getLevel().dimension(), center.x + dx, center.z + dz)) {
+                    if (!LWSWorldOptions.isValidPos(region.getLevel().dimension(), center.x() + dx, center.z() + dz)) {
                         return true;
                     }
                 }

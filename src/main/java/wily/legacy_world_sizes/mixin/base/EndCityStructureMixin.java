@@ -36,7 +36,7 @@ public abstract class EndCityStructureMixin {
 
             if (limit != null && level.dimension() == Level.END) {
                 for (LegacyChunkBounds bound : limit.bounds()) {
-                    if (bound.isInside(generationContext.chunkPos().x, generationContext.chunkPos().z) && bound.middle().equals(generationContext.chunkPos()))
+                    if (bound.isInside(generationContext.chunkPos().x(), generationContext.chunkPos().z()) && bound.middle().equals(generationContext.chunkPos()))
                         return Optional.of(new Structure.GenerationStub(lowest, structurePiecesBuilder -> this.generatePieces(structurePiecesBuilder, lowest, rotation, generationContext)));
                 }
             }

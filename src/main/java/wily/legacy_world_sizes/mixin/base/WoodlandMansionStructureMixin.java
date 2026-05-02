@@ -33,7 +33,7 @@ public abstract class WoodlandMansionStructureMixin extends Structure {
 
             if (limit != null && level.dimension() == Level.OVERWORLD) {
                 for (LegacyChunkBounds bound : limit.bounds()) {
-                    if (bound.isInside(generationContext.chunkPos().x, generationContext.chunkPos().z)) {
+                    if (bound.isInside(generationContext.chunkPos().x(), generationContext.chunkPos().z())) {
                         return Optional.of(new Structure.GenerationStub(lowest, structurePiecesBuilder -> this.generatePieces(structurePiecesBuilder, generationContext, lowest, rotation)));
                     }
                 }

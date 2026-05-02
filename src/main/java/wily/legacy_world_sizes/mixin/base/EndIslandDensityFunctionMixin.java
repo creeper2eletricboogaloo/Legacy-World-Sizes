@@ -22,8 +22,8 @@ public class EndIslandDensityFunctionMixin {
             for (LegacyChunkBounds bound : limit.bounds()) {
                 if (bound.isInside(i / 2, j / 2)) {
 
-                    int lx = i - (bound.min().x + bound.max().x);
-                    int lz = j - (bound.min().z + bound.max().z);
+                    int lx = i - (bound.min().x() + bound.max().x());
+                    int lz = j - (bound.min().z() + bound.max().z());
 
                     float height = 100 - Mth.sqrt(lx * lx + lz * lz) * 8.0F;
                     cir.setReturnValue(Mth.clamp(height, -100.0f, 80.0f));
