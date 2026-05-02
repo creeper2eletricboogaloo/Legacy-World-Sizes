@@ -7,7 +7,7 @@
   "client": [
     "client.CreateWorldScreenWorldTabMixin",
     "client.ClientLevelMixin",
-    "client.compat.legacy4j.WorldMoreOptionsScreenMixin",
+//    "client.compat.legacy4j.WorldMoreOptionsScreenMixin",
     "client.CreateWorldScreenMixin"
   ],
   "mixins": [

@@ -1,6 +1,5 @@
 package wily.legacy_world_sizes.mixin.base;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
@@ -25,9 +24,11 @@ import wily.legacy_world_sizes.config.LWSWorldOptions;
 import wily.legacy_world_sizes.util.LegacyChunkBounds;
 import wily.legacy_world_sizes.util.LegacyLevelLimit;
 
+import java.util.List;
+
 @Mixin(EnderDragonFight.class)
 public abstract class EndDragonFightMixin {
-    @Shadow @Final private ObjectArrayList<Integer> gateways;
+    @Shadow @Final private List<Integer> gateways;
 
     @Shadow protected abstract void spawnNewGateway(BlockPos blockPos);
 
