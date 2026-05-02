@@ -66,7 +66,7 @@ dependencies {
 	implementation("net.fabricmc.fabric-api:fabric-api:${prop("fabric_api_version")}")
 	implementation("com.terraformersmc:modmenu:${prop("modmenu_version")}")
 	api("wily.factory_api:factory_api-fabric:${stonecutter.current.version}-${prop("factory_api_version")}")
-	modCompileOnly("wily.legacy:legacy-fabric:${stonecutter.current.version}-${legacy4j_version}")
+	compileOnly("wily.legacy:legacy-fabric:${stonecutter.current.version}-${prop("legacy4j_version")}")
 
 	implementation(libs.moulberry.mixinconstraints)
 	include(libs.moulberry.mixinconstraints)

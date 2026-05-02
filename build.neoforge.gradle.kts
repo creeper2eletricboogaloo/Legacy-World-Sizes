@@ -60,7 +60,7 @@ dependencies {
 	jarJar(libs.moulberry.mixinconstraints)
 
 	api("wily.factory_api:factory_api-neoforge:${stonecutter.current.version}-${prop("factory_api_version")}")
-	modCompileOnly("wily.legacy:legacy-${loader}:${stonecutter.current.version}-${legacy4j_version}")
+	modCompileOnly("wily.legacy:legacy-${loader}:${stonecutter.current.version}-${prop("legacy4j_version")}")
 
 	api(jarJar("org.apache.httpcomponents:httpclient:4.5.14") {
 		exclude(group = "commons-codec", module = "commons-codec")
