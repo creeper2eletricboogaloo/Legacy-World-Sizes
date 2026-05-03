@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
@@ -29,6 +29,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.feature.EndSpikeFeature;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
@@ -87,7 +88,7 @@ public class LWSWorldOptions {
         return server == null ? ops : RegistryOps.create(ops, server.registryAccess());
     }
 
-    public static final List<SpikeFeature.EndSpike> LEGACY_END_SPIKES = createLegacyEndSpikes(8);
+    public static final List<EndSpikeFeature.EndSpike> LEGACY_END_SPIKES = createLegacyEndSpikes(8);
 
     public static <T> FactoryConfig<T> buildAndRegister(UnaryOperator<FactoryConfig.Builder<T>> consumer, FactoryConfigDisplay.Builder<T> builder) {
         return consumer.apply(new FactoryConfig.Builder<>()).displayFromKey(t -> builder.build(LWSComponents.optionName(t))).buildAndRegister(WORLD_STORAGE);
@@ -150,7 +151,7 @@ public class LWSWorldOptions {
     }
 
     public static boolean isValidPos(ResourceKey<Level> level, ChunkPos pos) {
-        return isValidPos(level, pos.x, pos.z);
+        return isValidPos(level, pos.x(), pos.z());
     }
 
     public static boolean isValidPos(ResourceKey<Level> level, BlockPos pos) {
@@ -228,7 +229,7 @@ public class LWSWorldOptions {
 
     public static void setupMaxEndGateways(MinecraftServer server) {
         ServerLevel end = server.getLevel(Level.END);
-        if (LWSWorldOptions.maxEndGateways.get() != 20 && end != null && end.getDragonFight() instanceof EndDragonFightAccessor accessor && end.getServer().getWorldData().endDragonFightData().gateways().isEmpty()) {
+        if (LWSWorldOptions.maxEndGateways.get() != 20 && end != null && end.getDragonFight() instanceof EndDragonFightAccessor accessor && ((EndDragonFightAccessor)end.getDragonFight()).getGateways().isEmpty()) {
             accessor.getGateways().clear();
 
             if (LWSWorldOptions.maxEndGateways.get() == 1) accessor.getGateways().add(0);
@@ -266,7 +267,7 @@ public class LWSWorldOptions {
                 @Override
                 public ChunkPos getPotentialStructureChunk(long l, int i, int j) {
                     for (ChunkPos validPosition : validPositions) {
-                        if (validPosition.x == i && validPosition.z == j) return validPosition;
+                        if (validPosition.x() == i && validPosition.z() == j) return validPosition;
                     }
                     return validPositions.get(0);
                 }
@@ -329,8 +330,8 @@ public class LWSWorldOptions {
     public static void setupStructureValidPlacement(LegacyLevelLimit limit, Level level, ChunkGeneratorStructureState genState, ResourceKey<StructureSet> key, boolean alwaysPlace) {
         if (limit != null && genState instanceof ChunkGeneratorStructureStateAccessor accessor) {
             for (LegacyChunkBounds bound : limit.bounds()) {
-                int width = (bound.max().x - bound.min().x);
-                int depth = (bound.max().z - bound.min().z);
+                int width = (bound.max().x() - bound.min().x());
+                int depth = (bound.max().z() - bound.min().z());
                 int d = Math.min(width, depth) / 6;
                 Holder<StructureSet> structureSet = level.registryAccess().getOrThrow(key);
                 List<Holder<StructureSet>> structureSets = new ArrayList<>(genState.possibleStructureSets());
@@ -357,8 +358,8 @@ public class LWSWorldOptions {
                 Holder<StructureSet> structureSet = level.registryAccess().getOrThrow(key);
                 List<Holder<StructureSet>> structures = new ArrayList<>(genState.possibleStructureSets());
                 if (structureSet.value().placement() instanceof ConcentricRingsStructurePlacement old && structures.remove(structureSet)) {
-                    int width = (bound.max().x - bound.min().x);
-                    int depth = (bound.max().z - bound.min().z);
+                    int width = (bound.max().x() - bound.min().x());
+                    int depth = (bound.max().z() - bound.min().z());
                     int d = Math.min(width, depth);
 
                     structures.add(Holder.direct(new StructureSet(structureSet.value().structures(), new ConcentricRingsStructurePlacement(Math.min(old.distance(), d / 12), old.spread(), Math.min(old.count(), Math.max(d / 52, 1)), biomes))));
@@ -371,8 +372,8 @@ public class LWSWorldOptions {
         }
     }
 
-    public static List<SpikeFeature.EndSpike> createLegacyEndSpikes(int amount) {
-        ImmutableList.Builder<SpikeFeature.EndSpike> builder = ImmutableList.builder();
+    public static List<EndSpikeFeature.EndSpike> createLegacyEndSpikes(int amount) {
+        ImmutableList.Builder<EndSpikeFeature.EndSpike> builder = ImmutableList.builder();
 
         for (int i = 0; i < amount; i++) {
             double ang = 2.0 * (-Math.PI + (Math.PI / amount) * i);
@@ -380,7 +381,7 @@ public class LWSWorldOptions {
             int z = Mth.floor(42.0 * Math.sin(ang));
             int width = 2 + i / 3;
             int height = 73 + i * 3;
-            builder.add(new SpikeFeature.EndSpike(x, z, width, height, i >= amount - 2));
+            builder.add(new EndSpikeFeature.EndSpike(x, z, width, height, i >= amount - 2));
         }
 
         return builder.build();
@@ -405,10 +406,10 @@ public class LWSWorldOptions {
 
         public void generateValidPositions(long seed) {
             if (generatedPositions) return;
-            int minX = Math.floorDiv(bounds.min().x, spacing());
-            int minZ = Math.floorDiv(bounds.min().z, spacing());
-            int maxX = Math.floorDiv(bounds.max().x, spacing());
-            int maxZ = Math.floorDiv(bounds.max().z, spacing());
+            int minX = Math.floorDiv(bounds.min().x(), spacing());
+            int minZ = Math.floorDiv(bounds.min().z(), spacing());
+            int maxX = Math.floorDiv(bounds.max().x(), spacing());
+            int maxZ = Math.floorDiv(bounds.max().z(), spacing());
 
             for (int x = minX; x <= maxX; x++) {
                 for (int z = minZ; z <= maxZ; z++) {
@@ -420,7 +421,7 @@ public class LWSWorldOptions {
                         for (StructureSet.StructureSelectionEntry structureSelectionEntry2 : structures) {
                             totalWeight += structureSelectionEntry2.weight();
                         }
-                        worldgenRandom.setLargeFeatureWithSalt(seed, spacedPos.x, spacedPos.z, this.salt());
+                        worldgenRandom.setLargeFeatureWithSalt(seed, spacedPos.x(), spacedPos.z(), this.salt());
                         RandomSource fork = worldgenRandom.fork();
                         int n = spacing() - separation();
                         ChunkPos pos = ChunkPos.ZERO;
@@ -442,13 +443,13 @@ public class LWSWorldOptions {
 
                             int o = spreadType().evaluate(worldgenRandom, n);
                             int p = spreadType().evaluate(worldgenRandom, n);
-                            pos = new ChunkPos(spacedPos.x * spacing() + o, spacedPos.z * spacing() + p);
+                            pos = new ChunkPos(spacedPos.x() * spacing() + o, spacedPos.z() * spacing() + p);
 
-                            if (bounds.isInside(pos.x, pos.z)) {
+                            if (bounds.isInside(pos.x(), pos.z())) {
                                 BiomeSource biomeSource = ((ChunkGeneratorStructureStateAccessor) structureState).getBiomeSource();
                                 HolderSet<Biome> biomes = entry.structure().value().biomes();
 
-                                for (BlockPos.MutableBlockPos blockPos : BlockPos.spiralAround(new BlockPos(pos.x, 0, pos.z), spacing(), Direction.EAST, Direction.SOUTH)) {
+                                for (BlockPos.MutableBlockPos blockPos : BlockPos.spiralAround(new BlockPos(pos.x(), 0, pos.z()), spacing(), Direction.EAST, Direction.SOUTH)) {
                                     //LegacyWorldSizes.LOGGER.warn("Attempt to find biome for {} at {}, {}, starting from {}, {}", entry.structure().unwrapKey().get().location(), blockPos.getX(), blockPos.getZ(), pos.x, pos.z);
                                     if (bounds.isInside(blockPos.getX(), blockPos.getZ(), -distanceFromBorder) && biomes.contains(biomeSource.getNoiseBiome(QuartPos.fromSection(blockPos.getX()), QuartPos.fromBlock(60), QuartPos.fromSection(blockPos.getZ()), structureState.randomState().sampler()))) {
                                         //LegacyWorldSizes.LOGGER.warn("Found biome for {} at {}, {}, starting on {}, {}, spaced by {}, {}, using {}", entry.structure().unwrapKey().get().location(), blockPos.getX(), blockPos.getZ(), pos.x, pos.z, spacedPos.x, spacedPos.z, n);
@@ -472,7 +473,7 @@ public class LWSWorldOptions {
             generateValidPositions(l);
 
             for (ChunkPos value : validPositions.values()) {
-                if (value.x == i && value.z == j) return value;
+                if (value.x() == i && value.z() == j) return value;
             }
 
             return validPositions.getOrDefault(new ChunkPos(Math.floorDiv(i, spacing()), Math.floorDiv(j, spacing())), ChunkPos.ZERO);

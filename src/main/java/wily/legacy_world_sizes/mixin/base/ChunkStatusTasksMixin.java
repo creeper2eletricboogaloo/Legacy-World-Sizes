@@ -23,7 +23,7 @@ public class ChunkStatusTasksMixin {
         LegacyLevelLimit limit = LWSWorldOptions.legacyLevelLimits.get().get(worldGenContext.level().dimension());
         if (limit != null && limit.bedrockBarrier()) {
             for (LegacyChunkBounds bounds : limit.bounds()) {
-                if (worldGenContext.generator() instanceof FlatLevelSource || bounds.isInsideBorder(chunkAccess.getPos().x, chunkAccess.getPos().z)) {
+                if (worldGenContext.generator() instanceof FlatLevelSource || bounds.isInsideBorder(chunkAccess.getPos().x(), chunkAccess.getPos().z())) {
                     return original.thenApply(access -> {
                         bounds.generateBedrockWalls(chunkAccess, worldGenContext.generator(), worldGenContext.level().getChunkSource().randomState());
                         return chunkAccess;

@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.*;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import wily.factoryapi.util.ListMap;
@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public record LegacyBiomeScale(ResourceLocation id, Component name, Optional<AddOctave> octaveFunction) {
-    public static final ListMap<ResourceLocation, LegacyBiomeScale> map = new ListMap<>();
-    public static final Codec<LegacyBiomeScale> CODEC = map.createCodec(ResourceLocation.CODEC);
+public record LegacyBiomeScale(Identifier id, Component name, Optional<AddOctave> octaveFunction) {
+    public static final ListMap<Identifier, LegacyBiomeScale> map = new ListMap<>();
+    public static final Codec<LegacyBiomeScale> CODEC = map.createCodec(Identifier.CODEC);
 
     public static final List<ResourceKey<NormalNoise.NoiseParameters>> BIOME_SCALE_NOISE_PARAMETERS = List.of(Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS, Noises.EROSION);
 
@@ -34,7 +34,7 @@ public record LegacyBiomeScale(ResourceLocation id, Component name, Optional<Add
             if (holder.getOctaveFunction() != OctaveFunction.this) {
                 int oldValue = noiseParameters.value().firstOctave();
                 holder.setOctaveFunction(OctaveFunction.this);
-                LegacyWorldSizes.LOGGER.debug("Adjusted {} firstOctave from {} to {}", noiseParameters.key().location(), oldValue, noiseParameters.value().firstOctave());
+                LegacyWorldSizes.LOGGER.debug("Adjusted {} firstOctave from {} to {}", noiseParameters.key().identifier(), oldValue, noiseParameters.value().firstOctave());
             }
         }
 

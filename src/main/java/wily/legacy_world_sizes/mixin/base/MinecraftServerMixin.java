@@ -15,7 +15,7 @@ import wily.legacy_world_sizes.util.LevelHolder;
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
 
-    @ModifyExpressionValue(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/border/WorldBorder$Settings;toWorldBorder()Lnet/minecraft/world/level/border/WorldBorder;"))
+    @ModifyExpressionValue(method = "createLevels", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;getWorldBorder()Lnet/minecraft/world/level/border/WorldBorder;"))
     private WorldBorder createLevels(WorldBorder original, @Local(ordinal = 1) ServerLevel level) {
         return LevelHolder.withLevel(original, level);
     }

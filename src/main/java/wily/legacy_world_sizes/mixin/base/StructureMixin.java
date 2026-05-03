@@ -14,7 +14,7 @@ public class StructureMixin {
     @ModifyArg(method = "isValidBiome", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/BiomeSource;getNoiseBiome(IIILnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/Holder;"), index = 0)
     private static int changeValidBiomeX(int i, @Local(argsOnly = true) Structure.GenerationContext generationContext) {
         if (generationContext.heightAccessor() instanceof ChunkAccessAccessor accessor && accessor.getLevelHeightAccessor() instanceof Level level && LWSWorldOptions.legacyLevelLimits.get().get(level.dimension()) != null) {
-            return QuartPos.fromSection(generationContext.chunkPos().x);
+            return QuartPos.fromSection(generationContext.chunkPos().x());
         }
         return i;
     }
@@ -22,7 +22,7 @@ public class StructureMixin {
     @ModifyArg(method = "isValidBiome", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/biome/BiomeSource;getNoiseBiome(IIILnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/Holder;"), index = 2)
     private static int changeValidBiomeZ(int i, @Local(argsOnly = true) Structure.GenerationContext generationContext) {
         if (generationContext.heightAccessor() instanceof ChunkAccessAccessor accessor && accessor.getLevelHeightAccessor() instanceof Level level && LWSWorldOptions.legacyLevelLimits.get().get(level.dimension()) != null) {
-            return QuartPos.fromSection(generationContext.chunkPos().z);
+            return QuartPos.fromSection(generationContext.chunkPos().z());
         }
         return i;
     }

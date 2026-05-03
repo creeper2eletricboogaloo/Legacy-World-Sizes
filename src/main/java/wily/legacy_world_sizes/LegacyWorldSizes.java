@@ -1,6 +1,6 @@
 package wily.legacy_world_sizes;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -91,7 +91,7 @@ public class LegacyWorldSizes {
         FactoryEvent.PlayerEvent.RELOAD_RESOURCES_EVENT.register(LegacyWorldSizes::onResourcesReload);
     }
 
-    public static ResourceLocation createModLocation(String path) {
+    public static Identifier createModLocation(String path) {
         return FactoryAPI.createLocation(MOD_ID, path);
     }
 
