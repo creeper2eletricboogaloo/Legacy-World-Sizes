@@ -61,13 +61,7 @@ dependencies {
 
 	api("wily.factory_api:factory_api-neoforge:${stonecutter.current.version}-${prop("factory_api_version")}")
 	compileOnly(rootProject.fileTree("leg four jay"))
-	//modCompileOnly("wily.legacy:legacy-${loader}:${stonecutter.current.version}-${prop("legacy4j_version")}")
-
-	api(jarJar("org.apache.httpcomponents:httpclient:4.5.14") {
-		exclude(group = "commons-codec", module = "commons-codec")
-	} as Any)
-	api(jarJar("org.apache.httpcomponents:httpcore:4.4.16") as Any)
-	api(jarJar("commons-logging:commons-logging:1.2") as Any)
+	compileOnly("wily.legacy:legacy-neoforge:${stonecutter.current.version}-${prop("legacy4j_version")}")
 }
 
 tasks.withType<Javadoc> {

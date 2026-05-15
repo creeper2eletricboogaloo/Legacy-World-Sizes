@@ -57,7 +57,7 @@ public class ChunkStepMixin {
 
             for (Map.Entry<Heightmap.Types, Heightmap> entry : protoChunk.getHeightmaps()) {
                 if (ChunkStatus.SURFACE.heightmapsAfter().contains(entry.getKey())) {
-                    fakeChunk.setHeightmap(entry.getKey(), entry.getValue().getRawData().clone());
+                    fakeChunk.setHeightmap(entry.getKey(), Arrays.copyOf(entry.getValue().getRawData(), entry.getValue().getRawData().length));
                 }
             }
 

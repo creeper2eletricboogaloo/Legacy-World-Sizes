@@ -20,7 +20,7 @@ public record LegacyBiomeScale(Identifier id, Component name, Optional<AddOctave
     public static final ListMap<Identifier, LegacyBiomeScale> map = new ListMap<>();
     public static final Codec<LegacyBiomeScale> CODEC = map.createCodec(Identifier.CODEC);
 
-    public static final List<ResourceKey<NormalNoise.NoiseParameters>> BIOME_SCALE_NOISE_PARAMETERS = List.of(Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS, Noises.EROSION);
+    public static final List<ResourceKey<NormalNoise.NoiseParameters>> BIOME_SCALE_NOISE_PARAMETERS = List.of(Noises.TEMPERATURE, Noises.VEGETATION, Noises.CONTINENTALNESS);
 
     public static final LegacyBiomeScale SMALL = register(new LegacyBiomeScale(LegacyWorldSizes.createModLocation("small"), LWSComponents.optionName("biomeScales.small"), Optional.of(new AddOctave(2))));
 

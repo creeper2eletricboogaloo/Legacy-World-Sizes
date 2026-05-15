@@ -257,7 +257,7 @@ public record LegacyChunkBounds(ChunkPos min, ChunkPos max, VoxelShape shape) {
             }
         }
 
-        LegacyWorldSizes.LOGGER.debug("Balanced seed with {} biomes and weigth of {}", actualBiomeCount, actualBiomeWeight);
+        LegacyWorldSizes.LOGGER.debug("Balanced seed with {} biomes and weight of {}", actualBiomeCount, actualBiomeWeight);
 
         return actualSeed;
     }
