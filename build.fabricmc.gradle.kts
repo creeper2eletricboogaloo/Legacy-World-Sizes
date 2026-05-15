@@ -9,9 +9,9 @@ platform {
 		required("minecraft") {
 			versionRange = stonecutter.current.version
 		}
-		required("fabric-api") {
-			slug("fabric-api")
-			versionRange = ">=${prop("fabric_api_version")}"
+		required("factory_api") {
+			slug("factory-api")
+			versionRange = ">=${prop("factory_api_version")}"
 		}
 		required("fabricloader") {
 			versionRange = ">=${libs.fabric.loader.get().version}"
