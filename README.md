@@ -1,4 +1,4 @@
-<div style="text-align: center;">
+<div align="center">
 
 [<img src="https://github.com/Kyubion-Studios/Legacy4J-Branding/blob/main/media/curseforge_button.png?raw=true" alt="curseforge" width="100">](https://www.curseforge.com/minecraft/mc-mods/legacy-minecraft)
 [<img src="https://github.com/Kyubion-Studios/Legacy4J-Branding/blob/main/media/modrinth_button.png?raw=true" alt="modrinth" width="100">](https://modrinth.com/mod/legacy4j)
